@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "template": "tanstack_start_ts_2026-06-17",
+  "name": "tanstack_start_ts",
+  "language": "typescript",
+  "framework": "vite-react",
+  "packageManager": "bun",
+  "devCommand": "bun run dev",
+  "buildCommand": "bun run build",
+  "previewCommand": "bun run preview",
+  "recommendedEditor": "vscode",
+  "notes": "This project uses Vite + React + TanStack libraries. Migrations live in /supabase/migrations and Lovable integration hints live in /.lovable/plan.md."
+}
