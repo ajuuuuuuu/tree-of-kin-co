@@ -144,7 +144,16 @@ export function FamilyTree({
       >
         <Background gap={20} />
         <Controls showInteractive={false} />
-        <MiniMap pannable zoomable />
+        <MiniMap 
+          pannable 
+          zoomable 
+          className="royal-minimap"
+          maskColor="rgba(15, 23, 42, 0.3)"
+          nodeColor="#06b6d4"
+          nodeStrokeColor="#0891b2"
+          nodeBorderRadius={2}
+          style={{ borderRadius: '0.6rem' }}
+        />
       </ReactFlow>
     </div>
   );

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -82,6 +82,35 @@ function AdminPage() {
     role: "admin",
     enabled: isAdmin,
   });
+
+  const onlineUsers = useMemo(() => Object.values(online), [online]);
+  const visitorOnline = useMemo(
+    () => onlineUsers.filter((p) => p.role === "visitor" || p.role === "new_member"),
+    [onlineUsers],
+  );
+  const deviceCounts = useMemo(() => {
+    const counts = { desktop: 0, mobile: 0, tablet: 0, unknown: 0 } as Record<"desktop" | "mobile" | "tablet" | "unknown", number>;
+    onlineUsers.forEach((p) => {
+      const key = p.device ?? "unknown";
+      counts[key] = (counts[key] ?? 0) + 1;
+    });
+    return counts;
+  }, [onlineUsers]);
+  const countryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    onlineUsers.forEach((p) => {
+      const country = p.country || "unknown";
+      counts[country] = (counts[country] || 0) + 1;
+    });
+    return counts;
+  }, [onlineUsers]);
+  const topCountries = useMemo(
+    () =>
+      Object.entries(countryCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5),
+    [countryCounts],
+  );
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -254,21 +283,78 @@ function AdminPage() {
 
       <div className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6">
         <section>
-          <h2 className="mb-3 text-lg font-semibold">
-            Online now <span className="text-sm font-normal text-muted-foreground">({Object.keys(online).length})</span>
-          </h2>
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Online now</h2>
+              <p className="text-sm text-muted-foreground">View live visitor activity, device type and country distribution.</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="rounded-md border bg-muted p-3 text-sm">
+                <div className="text-muted-foreground">Visitors online</div>
+                <div className="mt-2 text-xl font-semibold">{visitorOnline.length}</div>
+              </div>
+              <div className="rounded-md border bg-muted p-3 text-sm">
+                <div className="text-muted-foreground">Desktop</div>
+                <div className="mt-2 text-xl font-semibold">{deviceCounts.desktop}</div>
+              </div>
+              <div className="rounded-md border bg-muted p-3 text-sm">
+                <div className="text-muted-foreground">Mobile</div>
+                <div className="mt-2 text-xl font-semibold">{deviceCounts.mobile}</div>
+              </div>
+            </div>
+          </div>
+
           {Object.keys(online).length === 0 ? (
             <p className="rounded-md border bg-card p-4 text-sm text-muted-foreground">No one online.</p>
           ) : (
-            <ul className="flex flex-wrap gap-2">
-              {Object.values(online).map((p) => (
-                <li key={p.user_id} className="flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
-                  <span>{p.display_name}</span>
-                  <Badge variant="secondary" className="text-[10px]">{p.role}</Badge>
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {onlineUsers.map((p) => (
+                  <div key={p.user_id} className="flex flex-wrap items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm">
+                    <span className="h-2 w-2 rounded-full bg-green-500" />
+                    <span>{p.display_name}</span>
+                    <Badge variant="secondary" className="text-[10px]">{p.role}</Badge>
+                    <span className="rounded bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{p.device}</span>
+                    <span className="rounded bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">{p.country}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-md border bg-card p-4">
+                  <h3 className="text-sm font-semibold">Device breakdown</h3>
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center justify-between">
+                      <span>Desktop</span>
+                      <span>{deviceCounts.desktop}</span>
+                    </li>
+                    <li className="flex items-center justify-between">
+                      <span>Mobile</span>
+                      <span>{deviceCounts.mobile}</span>
+                    </li>
+                    <li className="flex items-center justify-between">
+                      <span>Tablet</span>
+                      <span>{deviceCounts.tablet}</span>
+                    </li>
+                    <li className="flex items-center justify-between">
+                      <span>Unknown</span>
+                      <span>{deviceCounts.unknown}</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="rounded-md border bg-card p-4">
+                  <h3 className="text-sm font-semibold">Top countries</h3>
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {topCountries.map(([country, count]) => (
+                      <li key={country} className="flex items-center justify-between">
+                        <span>{country}</span>
+                        <span>{count}</span>
+                      </li>
+                    ))}
+                    {topCountries.length === 0 && <li>No country data yet.</li>}
+                  </ul>
+                </div>
+              </div>
+            </div>
           )}
         </section>
 

@@ -144,50 +144,54 @@ function Index() {
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="royal-navbar flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 overflow-visible relative">
-        <div className="flex items-center gap-3">
+      <header className="royal-navbar flex items-center justify-between gap-6 border-b px-6 py-4 overflow-visible relative">
+        {/* Left: Logo and Title */}
+        <div className="flex items-center gap-4 flex-shrink-0">
           {!logoError ? (
             <img
               src="/logo.png"
               alt="Family logo"
-              className="h-32 w-32 rounded-full border border-border object-cover flex-shrink-0 -my-6"
+              className="h-24 w-24 rounded-full border-2 border-yellow-600 object-cover"
               onError={() => setLogoError(true)}
             />
           ) : (
-            <div className="flex h-32 w-32 items-center justify-center rounded-full border border-border bg-muted text-2xl font-semibold text-muted-foreground flex-shrink-0 -my-6">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-yellow-600 bg-yellow-900/30 text-2xl font-semibold text-yellow-500">
               त
             </div>
           )}
           <div>
-            <h1 className="text-lg font-semibold">तड़ियाल वंश</h1>
-            <p className="text-xs text-muted-foreground">
-              {user
-                ? `${profile?.display_name ?? user.email} · ${
-                    isAdmin
-                      ? "Admin"
-                      : isFamilyMember
-                      ? "Family member — your node is highlighted"
-                      : role === "visitor"
-                      ? "Visitor — explore the tree"
-                      : "New member — request to join"
-                  }`
-                : "Sign in as a family member, new member, or visitor"}
+            <h1 className="text-xl font-bold text-yellow-400 pointer-events-none select-none">तड़ियाल वंश</h1>
+            <p className="text-xs text-yellow-300/80 flex items-center gap-1 pointer-events-none select-none">
+              {user ? (
+                <>
+                  <span className="text-yellow-600">🛡️</span>
+                  <span>{isAdmin ? "Admin" : isFamilyMember ? "Family member" : role === "visitor" ? "Visitor" : "New member"} • Admin</span>
+                </>
+              ) : (
+                "Guest"
+              )}
             </p>
           </div>
         </div>
-        <div className="relative w-full max-w-sm">
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name..."
-            className="royal-search"
-          />
+
+        {/* Center: Search */}
+        <div className="relative flex-1 max-w-md">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white pointer-events-none select-none">🔍</span>
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name..."
+              className="royal-search pl-10 pr-12"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 text-xl pointer-events-none select-none">🍃</span>
+          </div>
           {matches.length > 0 && (
-            <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover shadow-md text-popover-foreground">
+            <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-yellow-600/30 bg-slate-900 shadow-lg">
               {matches.map((p) => (
                 <button
                   key={p.id}
-                  className="block w-full px-3 py-2 text-left text-sm text-popover-foreground hover:bg-accent"
+                  className="block w-full px-4 py-2 text-left text-sm text-yellow-100 hover:bg-yellow-600/20"
                   onClick={() => {
                     setSelectedId(p.id);
                     setHighlightId(p.id);
@@ -200,14 +204,15 @@ function Index() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Right: Buttons */}
+        <div className="flex items-center gap-3 flex-shrink-0">
           {user && !myNode && (
             <Button
               size="sm"
-              variant="secondary"
               disabled={pendingRequest}
               onClick={() => setJoinOpen(true)}
-              className="royal-button"
+              className="royal-button-outlined pointer-events-none select-none"
             >
               {pendingRequest ? "Request pending" : "Add me to the tree"}
             </Button>
@@ -215,25 +220,28 @@ function Index() {
           {myNode && (
             <Button
               size="sm"
-              variant="secondary"
               onClick={() => {
                 setSelectedId(myNode.id);
                 setHighlightId(myNode.id);
               }}
-              className="royal-button"
+              className="royal-button-outlined pointer-events-none select-none"
             >
               My node
             </Button>
           )}
           {isAdmin && (
             <Link to="/admin">
-              <Button variant="secondary" size="sm" className="royal-button">Admin</Button>
+              <Button size="sm" className="royal-button-outlined pointer-events-none select-none">
+                Admin
+              </Button>
             </Link>
           )}
           {user ? (
-            <Button variant="ghost" size="sm" onClick={signOut} className="royal-button">Sign out</Button>
+            <Button size="sm" onClick={signOut} className="royal-button-outlined pointer-events-none select-none">
+              Sign out
+            </Button>
           ) : (
-            <Button variant="outline" size="sm" onClick={() => navigate({ to: "/auth" })} className="royal-button">
+            <Button size="sm" onClick={() => navigate({ to: "/auth" })} className="royal-button-outlined pointer-events-none select-none">
               Sign in
             </Button>
           )}
@@ -314,6 +322,19 @@ function Index() {
           }}
         />
       )}
+      {/* Footer */}
+      <footer className="royal-footer">
+        <div className="royal-footer-badge" aria-hidden>
+          <div className="royal-footer-badge-inner"><span className="royal-badge-icon">⚜</span></div>
+        </div>
+        <div className="royal-footer-inner">
+          <div className="royal-footer-orn left">❖</div>
+          <div className="royal-footer-crest">⚜</div>
+          <div className="royal-footer-text">Our Roots Make Us Stronger</div>
+          <div className="royal-footer-crest">⚜</div>
+          <div className="royal-footer-orn right">❖</div>
+        </div>
+      </footer>
     </div>
   );
 }
