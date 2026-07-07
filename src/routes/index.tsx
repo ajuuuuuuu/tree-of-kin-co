@@ -324,8 +324,13 @@ function Index() {
       )}
       {/* Footer */}
       <footer className="royal-footer shrink-0">
+        <div className="royal-footer-medallion" aria-hidden="true">
+          <div className="royal-footer-shield">🛡️</div>
+        </div>
         <div className="royal-footer-inner">
+          <span className="royal-footer-flourish left" aria-hidden="true">❦</span>
           <div className="royal-footer-text">Our Roots Make Us Stronger</div>
+          <span className="royal-footer-flourish right" aria-hidden="true">❦</span>
         </div>
       </footer>
     </div>
