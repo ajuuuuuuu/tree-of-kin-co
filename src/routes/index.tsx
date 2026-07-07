@@ -144,24 +144,24 @@ function Index() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <header className="royal-navbar flex items-center justify-between gap-6 border-b px-6 py-4 overflow-visible relative">
+      <header className="royal-navbar grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b px-3 py-3 sm:flex sm:flex-wrap sm:justify-between sm:gap-6 sm:px-6 sm:py-4 overflow-visible relative">
         {/* Left: Logo and Title */}
-        <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4 sm:flex-shrink-0">
           {!logoError ? (
             <img
               src="/logo.png"
               alt="Family logo"
-              className="h-24 w-24 rounded-full border-2 border-yellow-600 object-cover"
+              className="h-12 w-12 shrink-0 rounded-full border-2 border-yellow-600 object-cover sm:h-20 sm:w-20 md:h-24 md:w-24"
               onError={() => setLogoError(true)}
             />
           ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-yellow-600 bg-yellow-900/30 text-2xl font-semibold text-yellow-500">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-yellow-600 bg-yellow-900/30 text-lg font-semibold text-yellow-500 sm:h-20 sm:w-20 sm:text-2xl md:h-24 md:w-24">
               त
             </div>
           )}
-          <div>
-            <h1 className="text-xl font-bold text-yellow-400 pointer-events-none select-none">तड़ियाल वंश</h1>
-            <p className="text-xs text-yellow-300/80 flex items-center gap-1 pointer-events-none select-none">
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-bold text-yellow-400 pointer-events-none select-none sm:text-xl">तड़ियाल वंश</h1>
+            <p className="truncate text-[10px] text-yellow-300/80 flex items-center gap-1 pointer-events-none select-none sm:text-xs">
               {user ? (
                 <>
                   <span className="text-yellow-600">🛡️</span>
@@ -175,7 +175,7 @@ function Index() {
         </div>
 
         {/* Center: Search */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative order-3 col-span-2 w-full sm:order-none sm:flex-1 sm:max-w-md">
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white pointer-events-none select-none">🔍</span>
             <Input
@@ -206,7 +206,7 @@ function Index() {
         </div>
 
         {/* Right: Buttons */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 sm:flex-shrink-0">
           {user && !myNode && (
             <Button
               size="sm"

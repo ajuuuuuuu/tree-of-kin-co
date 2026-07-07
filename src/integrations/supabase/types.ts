@@ -84,7 +84,6 @@ export type Database = {
           id: string
           name: string
           photo_url: string | null
-          updated_at: string
         }
         Insert: {
           biography?: string | null
@@ -96,7 +95,6 @@ export type Database = {
           id: string
           name: string
           photo_url?: string | null
-          updated_at?: string
         }
         Update: {
           biography?: string | null
@@ -108,7 +106,6 @@ export type Database = {
           id?: string
           name?: string
           photo_url?: string | null
-          updated_at?: string
         }
         Relationships: []
       }
@@ -137,7 +134,15 @@ export type Database = {
           person_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "persons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       relationships: {
         Row: {
