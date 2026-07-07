@@ -92,7 +92,7 @@ export function FamilyTree({
   const showSkeleton = isLoading;
 
   return (
-    <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-lg border bg-background/80">
+    <div className="relative h-full w-full overflow-hidden rounded-lg border bg-background/80">
       {showSkeleton && (
         <div className="absolute inset-0 z-10 flex flex-col justify-center gap-4 overflow-hidden bg-background/90 p-6 backdrop-blur-sm">
           <div className="flex items-center justify-center gap-3">

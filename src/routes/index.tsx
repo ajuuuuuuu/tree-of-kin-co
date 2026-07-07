@@ -143,7 +143,7 @@ function Index() {
     : null;
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-dvh flex-col overflow-hidden">
       <header className="royal-navbar flex items-center justify-between gap-6 border-b px-6 py-4 overflow-visible relative">
         {/* Left: Logo and Title */}
         <div className="flex items-center gap-4 flex-shrink-0">
@@ -212,7 +212,7 @@ function Index() {
               size="sm"
               disabled={pendingRequest}
               onClick={() => setJoinOpen(true)}
-              className="royal-button-outlined pointer-events-none select-none"
+              className="royal-button-outlined select-none"
             >
               {pendingRequest ? "Request pending" : "Add me to the tree"}
             </Button>
@@ -224,30 +224,30 @@ function Index() {
                 setSelectedId(myNode.id);
                 setHighlightId(myNode.id);
               }}
-              className="royal-button-outlined pointer-events-none select-none"
+              className="royal-button-outlined select-none"
             >
               My node
             </Button>
           )}
           {isAdmin && (
             <Link to="/admin">
-              <Button size="sm" className="royal-button-outlined pointer-events-none select-none">
+              <Button size="sm" className="royal-button-outlined select-none">
                 Admin
               </Button>
             </Link>
           )}
           {user ? (
-            <Button size="sm" onClick={signOut} className="royal-button-outlined pointer-events-none select-none">
+            <Button size="sm" onClick={signOut} className="royal-button-outlined select-none">
               Sign out
             </Button>
           ) : (
-            <Button size="sm" onClick={() => navigate({ to: "/auth" })} className="royal-button-outlined pointer-events-none select-none">
+            <Button size="sm" onClick={() => navigate({ to: "/auth" })} className="royal-button-outlined select-none">
               Sign in
             </Button>
           )}
         </div>
       </header>
-      <main className="flex-1">
+      <main className="flex-1 min-h-0 overflow-hidden">
         <FamilyTree
           persons={mainPersons}
           relationships={mainRelationships}
@@ -323,16 +323,9 @@ function Index() {
         />
       )}
       {/* Footer */}
-      <footer className="royal-footer">
-        <div className="royal-footer-badge" aria-hidden>
-          <div className="royal-footer-badge-inner"><span className="royal-badge-icon">⚜</span></div>
-        </div>
+      <footer className="royal-footer shrink-0">
         <div className="royal-footer-inner">
-          <div className="royal-footer-orn left">❖</div>
-          <div className="royal-footer-crest">⚜</div>
           <div className="royal-footer-text">Our Roots Make Us Stronger</div>
-          <div className="royal-footer-crest">⚜</div>
-          <div className="royal-footer-orn right">❖</div>
         </div>
       </footer>
     </div>
