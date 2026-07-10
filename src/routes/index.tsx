@@ -274,7 +274,7 @@ function Index() {
               relationships={relationships}
               isAdmin={isAdmin}
               currentUserPersonId={profile?.person_id ?? null}
-              canViewBirthFamily={isFamilyMember}
+              canViewBirthFamily={isAdmin || isFamilyMember || role === "member"}
               currentUserId={user?.id ?? null}
               currentUserName={profile?.display_name ?? ""}
               currentUserEmail={user?.email ?? ""}
