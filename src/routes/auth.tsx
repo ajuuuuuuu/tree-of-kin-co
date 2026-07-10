@@ -74,11 +74,13 @@ function AdminSignIn({ onDone }: { onDone: () => void }) {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      const { data: isAdmin } = await supabase.rpc("has_role", {
-        _user_id: data.user!.id,
-        _role: "admin",
-      });
-      if (!isAdmin) {
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user!.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!roleRow) {
         await supabase.auth.signOut();
         throw new Error("This account is not an admin.");
       }

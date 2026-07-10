@@ -24,18 +24,17 @@ export function useAuth() {
       setRole(null);
       return;
     }
-    const [{ data: prof }, { data: roleData }, { data: rolesRows }] = await Promise.all([
+    const [{ data: prof }, { data: rolesRows }] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, display_name, email, person_id")
         .eq("id", u.id)
         .maybeSingle(),
-      supabase.rpc("has_role", { _user_id: u.id, _role: "admin" }),
       supabase.from("user_roles").select("role").eq("user_id", u.id),
     ]);
     setProfile(prof as Profile | null);
-    setIsAdmin(Boolean(roleData));
     const roles = (rolesRows ?? []).map((r: { role: string }) => r.role);
+    setIsAdmin(roles.includes("admin"));
     setRole(
       roles.includes("admin")
         ? "admin"
