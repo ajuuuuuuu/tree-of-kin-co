@@ -113,7 +113,6 @@ export function FamilyTree({
       )}
 
       <ReactFlow
-        key={rfKey}
         nodes={styledNodes}
         edges={edges}
         nodeTypes={nodeTypes}
