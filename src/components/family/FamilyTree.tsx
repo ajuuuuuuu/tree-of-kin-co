@@ -29,7 +29,6 @@ export function FamilyTree({
   relatedIds?: Set<string>;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
 
   const toggleCollapse = useCallback((id: string) => {
     setCollapsed((prev) => {
@@ -74,22 +73,7 @@ export function FamilyTree({
     [nodes, hasChildrenOf, collapsed, toggleCollapse, highlightId, relatedIds],
   );
 
-  useEffect(() => {
-    setIsLoading(true);
-
-    const frame = window.requestAnimationFrame(() => {
-      if (styledNodes.length > 0) {
-        window.setTimeout(() => setIsLoading(false), 900);
-      } else {
-        window.setTimeout(() => setIsLoading(false), 1200);
-      }
-    });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [persons, relationships, styledNodes.length]);
-
-  const [rfKey] = useState(() => Math.random());
-  const showSkeleton = isLoading;
+  const showSkeleton = styledNodes.length === 0;
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-lg border bg-background/80">
@@ -129,7 +113,6 @@ export function FamilyTree({
       )}
 
       <ReactFlow
-        key={rfKey}
         nodes={styledNodes}
         edges={edges}
         nodeTypes={nodeTypes}

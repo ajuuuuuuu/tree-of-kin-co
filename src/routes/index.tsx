@@ -151,6 +151,10 @@ function Index() {
             <img
               src="/logo.png"
               alt="Family logo"
+              width={96}
+              height={96}
+              decoding="async"
+              fetchPriority="high"
               className="h-12 w-12 shrink-0 rounded-full border-2 border-yellow-600 object-cover sm:h-20 sm:w-20 md:h-24 md:w-24"
               onError={() => setLogoError(true)}
             />
