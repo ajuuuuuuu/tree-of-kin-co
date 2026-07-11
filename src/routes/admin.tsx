@@ -23,6 +23,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePresence } from "@/hooks/use-presence";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -62,6 +71,8 @@ interface SuggestionRow {
   status: string;
   created_at: string;
 }
+
+interface VisitRow { visitor_id: string; created_at: string }
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -163,6 +174,53 @@ function AdminPage() {
       return (data ?? []) as SuggestionRow[];
     },
   });
+
+  const visitsQ = useQuery({
+    queryKey: ["page_visits_30d"],
+    enabled: isAdmin,
+    queryFn: async (): Promise<VisitRow[]> => {
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from("page_visits")
+        .select("visitor_id, created_at")
+        .gte("created_at", since)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as VisitRow[];
+    },
+  });
+
+  const visitStats = useMemo(() => {
+    const rows = visitsQ.data ?? [];
+    const days: { date: string; visits: number; unique: number }[] = [];
+    const uniqueByDay = new Map<string, Set<string>>();
+    const countByDay = new Map<string, number>();
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      countByDay.set(key, 0);
+      uniqueByDay.set(key, new Set());
+    }
+    rows.forEach((r) => {
+      const key = r.created_at.slice(0, 10);
+      if (!countByDay.has(key)) return;
+      countByDay.set(key, (countByDay.get(key) ?? 0) + 1);
+      uniqueByDay.get(key)!.add(r.visitor_id);
+    });
+    countByDay.forEach((visits, date) => {
+      days.push({
+        date: date.slice(5),
+        visits,
+        unique: uniqueByDay.get(date)?.size ?? 0,
+      });
+    });
+    const total = rows.length;
+    const uniqueTotal = new Set(rows.map((r) => r.visitor_id)).size;
+    const today = days[days.length - 1]?.visits ?? 0;
+    return { days, total, uniqueTotal, today };
+  }, [visitsQ.data]);
 
   if (loading) return null;
   if (!user) return null;
@@ -282,6 +340,50 @@ function AdminPage() {
       </header>
 
       <div className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6">
+        <section>
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Visitor traffic</h2>
+              <p className="text-sm text-muted-foreground">Page visits over the last 30 days.</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="rounded-md border bg-muted p-3">
+                <div className="text-muted-foreground">Today</div>
+                <div className="mt-1 text-xl font-semibold">{visitStats.today}</div>
+              </div>
+              <div className="rounded-md border bg-muted p-3">
+                <div className="text-muted-foreground">30d visits</div>
+                <div className="mt-1 text-xl font-semibold">{visitStats.total}</div>
+              </div>
+              <div className="rounded-md border bg-muted p-3">
+                <div className="text-muted-foreground">Unique</div>
+                <div className="mt-1 text-xl font-semibold">{visitStats.uniqueTotal}</div>
+              </div>
+            </div>
+          </div>
+          <div className="h-64 rounded-md border bg-card p-3">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={visitStats.days} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="visitsFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#c9a961" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="#c9a961" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis allowDecimals={false} fontSize={11} tickLine={false} axisLine={false} width={28} />
+                <Tooltip
+                  contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 12 }}
+                  labelStyle={{ color: "hsl(var(--foreground))" }}
+                />
+                <Area type="monotone" dataKey="visits" stroke="#c9a961" strokeWidth={2} fill="url(#visitsFill)" name="Visits" />
+                <Area type="monotone" dataKey="unique" stroke="#0d2d47" strokeWidth={2} fill="transparent" name="Unique" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
         <section>
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>

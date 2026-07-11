@@ -6,6 +6,7 @@ import { PersonDetail } from "@/components/family/PersonDetail";
 import { JoinRequestDialog } from "@/components/family/JoinRequestDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   Dialog,
@@ -59,6 +60,23 @@ function Index() {
   useEffect(() => {
     if (profile?.person_id) setHighlightId(profile.person_id);
   }, [profile?.person_id]);
+
+  // Log a page visit once per browser session so admins can chart traffic
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const KEY = "tw_visit_logged";
+    if (sessionStorage.getItem(KEY)) return;
+    let visitorId = localStorage.getItem("tw_visitor_id");
+    if (!visitorId) {
+      visitorId =
+        (typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2) + Date.now().toString(36));
+      localStorage.setItem("tw_visitor_id", visitorId);
+    }
+    sessionStorage.setItem(KEY, "1");
+    supabase.from("page_visits").insert({ visitor_id: visitorId, path: "/" }).then(() => {});
+  }, []);
 
   // Check whether user already has a pending request
   useEffect(() => {
@@ -178,17 +196,23 @@ function Index() {
           </div>
         </div>
 
-        {/* Center: Search */}
+        {/* Center: Amazon-style search */}
         <div className="relative order-3 col-span-2 w-full sm:order-none sm:flex-1 sm:max-w-md">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white pointer-events-none select-none">🔍</span>
+          <div className="flex h-11 w-full items-stretch overflow-hidden rounded-md border-2 border-yellow-600 bg-white shadow-md focus-within:border-yellow-400 focus-within:shadow-[0_0_0_3px_rgba(201,169,97,0.35)]">
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name..."
-              className="royal-search pl-10 pr-12"
+              placeholder="Search family members..."
+              aria-label="Search family members"
+              className="h-full flex-1 rounded-none border-0 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-500 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-600 text-xl pointer-events-none select-none">🍃</span>
+            <button
+              type="button"
+              aria-label="Search"
+              className="flex h-full w-12 items-center justify-center bg-gradient-to-b from-yellow-400 to-yellow-500 text-slate-900 transition-colors hover:from-yellow-300 hover:to-yellow-400 active:from-yellow-500 active:to-yellow-600"
+            >
+              <Search className="h-5 w-5" strokeWidth={2.5} />
+            </button>
           </div>
           {matches.length > 0 && (
             <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-yellow-600/30 bg-slate-900 shadow-lg">
