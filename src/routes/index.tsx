@@ -6,7 +6,7 @@ import { PersonDetail } from "@/components/family/PersonDetail";
 import { JoinRequestDialog } from "@/components/family/JoinRequestDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   Dialog,
@@ -55,6 +55,7 @@ function Index() {
   const [joinOpen, setJoinOpen] = useState(false);
   const [pendingRequest, setPendingRequest] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   // Auto-highlight the user's own node when they're linked to one
   useEffect(() => {
@@ -196,34 +197,43 @@ function Index() {
           </div>
         </div>
 
-        {/* Center: Amazon-style search */}
-        <div className="relative order-3 col-span-2 w-full sm:order-none sm:flex-1 sm:max-w-md">
+        {/* Center: Amazon-style search (desktop shows full bar; mobile shows icon that expands) */}
+        <div className={`relative sm:order-none sm:flex-1 sm:max-w-md ${mobileSearchOpen ? "order-3 col-span-2 w-full" : "hidden sm:block"}`}>
           <div className="flex h-11 w-full items-stretch overflow-hidden rounded-md border-2 border-yellow-600 bg-white shadow-md focus-within:border-yellow-400 focus-within:shadow-[0_0_0_3px_rgba(201,169,97,0.35)]">
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search family members..."
               aria-label="Search family members"
+              autoFocus={mobileSearchOpen}
               className="h-full flex-1 rounded-none border-0 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-500 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
             <button
               type="button"
-              aria-label="Search"
+              aria-label={mobileSearchOpen ? "Close search" : "Search"}
+              onClick={() => {
+                if (mobileSearchOpen) {
+                  setQuery("");
+                  setMobileSearchOpen(false);
+                }
+              }}
               className="flex h-full w-12 items-center justify-center bg-gradient-to-b from-yellow-400 to-yellow-500 text-slate-900 transition-colors hover:from-yellow-300 hover:to-yellow-400 active:from-yellow-500 active:to-yellow-600"
             >
-              <Search className="h-5 w-5" strokeWidth={2.5} />
+              {mobileSearchOpen ? <X className="h-5 w-5 sm:hidden" strokeWidth={2.5} /> : null}
+              <Search className={`h-5 w-5 ${mobileSearchOpen ? "hidden sm:block" : ""}`} strokeWidth={2.5} />
             </button>
           </div>
           {matches.length > 0 && (
-            <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-md border border-yellow-600/30 bg-slate-900 shadow-lg">
+            <div className="absolute left-0 right-0 z-50 mt-1 max-w-[95vw] overflow-hidden rounded-md border border-yellow-600/30 bg-slate-900 shadow-lg sm:w-full">
               {matches.map((p) => (
                 <button
                   key={p.id}
-                  className="block w-full px-4 py-2 text-left text-sm text-yellow-100 hover:bg-yellow-600/20"
+                  className="block w-full truncate px-3 py-1.5 text-left text-sm leading-tight text-yellow-100 hover:bg-yellow-600/20"
                   onClick={() => {
                     setSelectedId(p.id);
                     setHighlightId(p.id);
                     setQuery("");
+                    setMobileSearchOpen(false);
                   }}
                 >
                   {p.name}
@@ -235,6 +245,16 @@ function Index() {
 
         {/* Right: Buttons */}
         <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 sm:flex-shrink-0">
+          {!mobileSearchOpen && (
+            <button
+              type="button"
+              aria-label="Search"
+              onClick={() => setMobileSearchOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-yellow-600 bg-gradient-to-b from-yellow-400 to-yellow-500 text-slate-900 shadow-md sm:hidden"
+            >
+              <Search className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+          )}
           {user && !myNode && (
             <Button
               size="sm"
