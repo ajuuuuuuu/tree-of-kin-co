@@ -6,7 +6,7 @@ import { PersonDetail } from "@/components/family/PersonDetail";
 import { JoinRequestDialog } from "@/components/family/JoinRequestDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   Dialog,
