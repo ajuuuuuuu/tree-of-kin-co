@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -27,29 +28,47 @@ export function PersonEditor({
   const [deathDate, setDeathDate] = useState(initial?.deathDate ?? "");
   const [photoUrl, setPhotoUrl] = useState(initial?.photoUrl ?? "");
   const [biography, setBiography] = useState(initial?.biography ?? "");
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadPct, setUploadPct] = useState<number | null>(null);
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
     const reader = new FileReader();
-    reader.onload = () => setPhotoUrl(reader.result as string);
+    setUploadPct(0);
+    reader.onprogress = (ev) => {
+      if (ev.lengthComputable) setUploadPct(Math.round((ev.loaded / ev.total) * 100));
+    };
+    reader.onload = () => {
+      setPhotoUrl(reader.result as string);
+      setUploadPct(100);
+      setTimeout(() => setUploadPct(null), 400);
+    };
+    reader.onerror = () => setUploadPct(null);
     reader.readAsDataURL(f);
   }
 
   return (
     <form
       className="space-y-3"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
-        if (!name.trim()) return;
-        onSubmit({
-          name: name.trim(),
-          gender,
-          birthDate: birthDate || undefined,
-          deathDate: deathDate || undefined,
-          photoUrl: photoUrl || undefined,
-          biography: biography || undefined,
-        });
+        if (!name.trim() || submitting) return;
+        setSubmitting(true);
+        try {
+          await Promise.resolve(
+            onSubmit({
+              name: name.trim(),
+              gender,
+              birthDate: birthDate || undefined,
+              deathDate: deathDate || undefined,
+              photoUrl: photoUrl || undefined,
+              biography: biography || undefined,
+            }),
+          );
+        } finally {
+          setSubmitting(false);
+        }
       }}
     >
       <div>
@@ -82,6 +101,17 @@ export function PersonEditor({
       <div>
         <Label>Photo</Label>
         <Input type="file" accept="image/*" onChange={handleFile} className="mt-1" />
+        {uploadPct !== null && (
+          <div className="mt-2">
+            <div className="h-1.5 w-full overflow-hidden rounded bg-muted">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${uploadPct}%` }}
+              />
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground">Uploading photo… {uploadPct}%</div>
+          </div>
+        )}
         {photoUrl && <img src={photoUrl} alt="" className="mt-2 h-16 w-16 rounded-full object-cover" />}
       </div>
       <div>
@@ -89,10 +119,18 @@ export function PersonEditor({
         <Textarea value={biography} onChange={(e) => setBiography(e.target.value)} rows={3} className="mt-1" />
       </div>
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={submitting || !name.trim() || uploadPct !== null}>
+          {submitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…
+            </>
+          ) : (
+            "Save"
+          )}
+        </Button>
       </div>
     </form>
   );
