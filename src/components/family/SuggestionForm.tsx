@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 /** Persist a correction/info suggestion to the database for admin review. */
@@ -31,7 +32,7 @@ export function SuggestionForm({
       className="space-y-3"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!message.trim()) return;
+        if (!message.trim() || submitting) return;
         setSubmitting(true);
         const { error } = await supabase.from("suggestions").insert({
           person_id: personId,
@@ -66,8 +67,10 @@ export function SuggestionForm({
         <Textarea id="msg" required rows={4} value={message} onChange={(e) => setMessage(e.target.value)} className="mt-1" />
       </div>
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-        <Button type="submit" disabled={submitting}>{submitting ? "Sending…" : "Submit"}</Button>
+        <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>Cancel</Button>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending…</>) : "Submit"}
+        </Button>
       </div>
     </form>
   );
