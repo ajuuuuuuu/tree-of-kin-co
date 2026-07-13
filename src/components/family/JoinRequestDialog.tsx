@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import type { Person } from "@/lib/family-data";
 
 type JoinRelation = "son" | "daughter" | "wife" | "father";
@@ -71,6 +72,7 @@ export function JoinRequestDialog({
   const [message, setMessage] = useState("");
   const [search, setSearch] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [uploadPct, setUploadPct] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -82,13 +84,22 @@ export function JoinRequestDialog({
     const f = e.target.files?.[0];
     if (!f) return;
     const reader = new FileReader();
-    reader.onload = () => setPhotoUrl(reader.result as string);
+    setUploadPct(0);
+    reader.onprogress = (ev) => {
+      if (ev.lengthComputable) setUploadPct(Math.round((ev.loaded / ev.total) * 100));
+    };
+    reader.onload = () => {
+      setPhotoUrl(reader.result as string);
+      setUploadPct(100);
+      setTimeout(() => setUploadPct(null), 400);
+    };
+    reader.onerror = () => setUploadPct(null);
     reader.readAsDataURL(f);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!parentId || !name.trim()) return;
+    if (!parentId || !name.trim() || submitting) return;
     setSubmitting(true);
     const { error } = await supabase.from("join_requests").insert({
       user_id: userId,
@@ -175,6 +186,14 @@ export function JoinRequestDialog({
               <Input type="file" accept="image/*" onChange={handleFile} className="mt-1" />
             </div>
           </div>
+          {uploadPct !== null && (
+            <div>
+              <div className="h-1.5 w-full overflow-hidden rounded bg-muted">
+                <div className="h-full bg-primary transition-all" style={{ width: `${uploadPct}%` }} />
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">Uploading photo… {uploadPct}%</div>
+            </div>
+          )}
           {photoUrl && <img src={photoUrl} alt="" className="h-16 w-16 rounded-full object-cover" />}
           <div>
             <Label>Short bio (optional)</Label>
@@ -185,11 +204,17 @@ export function JoinRequestDialog({
             <Textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={2} className="mt-1" />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting || !parentId || !name.trim()}>
-              {submitting ? "Sending…" : "Send request"}
+            <Button type="submit" disabled={submitting || !parentId || !name.trim() || uploadPct !== null}>
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending…
+                </>
+              ) : (
+                "Send request"
+              )}
             </Button>
           </div>
         </form>
