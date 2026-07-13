@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Handle, Position } from "reactflow";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import type { Person } from "@/lib/family-data";
 import { getYear } from "@/lib/tree-layout";
 
@@ -12,6 +13,8 @@ interface NodeData {
 
 export function PersonNode({ data }: { data: NodeData }) {
   const p = data.person;
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const initials = p.name
     .split(" ")
     .map((s) => s[0])
@@ -32,12 +35,23 @@ export function PersonNode({ data }: { data: NodeData }) {
       <Handle type="source" position={Position.Right} id="right" className="!opacity-0" />
       <Handle type="target" position={Position.Left} id="left" className="!opacity-0" />
       <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-        {p.photoUrl ? (
-          <img
-            src={p.photoUrl}
-            alt={p.name}
-            className="h-16 w-16 rounded-full border-4 border-card object-cover shadow-sm"
-          />
+        {p.photoUrl && !imgError ? (
+          <div className="relative h-16 w-16">
+            {!imgLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full border-4 border-card bg-muted shadow-sm">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            <img
+              src={p.photoUrl}
+              alt={p.name}
+              loading="lazy"
+              decoding="async"
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgError(true)}
+              className={`h-16 w-16 rounded-full border-4 border-card object-cover shadow-sm transition-opacity duration-200 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+            />
+          </div>
         ) : (
           <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-card bg-muted text-base font-semibold text-muted-foreground shadow-sm">
             {initials}
